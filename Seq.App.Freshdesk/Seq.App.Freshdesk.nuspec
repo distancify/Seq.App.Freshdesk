@@ -8,7 +8,9 @@
     <owners>$author$</owners>
     <description>$description$</description>
     <copyright>Copyright 2017</copyright>
-    <tags>Seq Freshdesk</tags>
+    <tags>seq-app Seq Freshdesk</tags>
+    <projectUrl>https://github.com/distancify/Seq.App.Freshdesk</projectUrl>
+    <licenseUrl>https://opensource.org/licenses/MS-PL</licenseUrl>
   </metadata>
   <files>
     <file src="bin\$configuration$\RestSharp.dll" target="lib\net45" />
