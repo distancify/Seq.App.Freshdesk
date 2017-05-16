@@ -5,7 +5,14 @@ The app itself will not do any filtering, you should connect this to an already 
 
 ## Features
 - Api key or username/password login.
-- Ticket level based on log entry level.
+- Ticket severity based on log entry level.
 - Ticket description built from event content.
 - Optional subject prefix.
 - Optional ticket type.
+
+## Notes
+Seq has more log levels than freshdesk has severities so i've mapped them like this.
+- Debug, Verboe, Information -> Low
+- Warning -> Medium
+- Error -> High
+- Fatal -> Urgent
