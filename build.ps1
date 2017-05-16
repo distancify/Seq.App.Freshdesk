@@ -1,0 +1,1 @@
+nuget pack .\Seq.App.Freshdesk\Seq.App.Freshdesk.csproj -build -Prop Configuration=Release
