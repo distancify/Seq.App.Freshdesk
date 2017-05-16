@@ -1,5 +1,8 @@
 packages/
-Seq.App.Freshdesk.Manual/bin/
-Seq.App.Freshdesk.Manual/obj/
 Seq.App.Freshdesk/bin/
 Seq.App.Freshdesk/obj/
+*.nupkg
+Seq.App.Freshdesk.Debugger/bin/
+Seq.App.Freshdesk.Debugger/obj/
+*.user
+.vs/

@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26430.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seq.App.Freshdesk", "Seq.App.Freshdesk\Seq.App.Freshdesk.csproj", "{64F77C48-6875-474F-91D0-A6E5DAE57F74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seq.App.Freshdesk.Manual", "Seq.App.Freshdesk.Manual\Seq.App.Freshdesk.Manual.csproj", "{21779DAF-FC44-4E56-8FC4-DC8F235D2FD6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seq.App.Freshdesk.Debugger", "Seq.App.Freshdesk.Debugger\Seq.App.Freshdesk.Debugger.csproj", "{21779DAF-FC44-4E56-8FC4-DC8F235D2FD6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
