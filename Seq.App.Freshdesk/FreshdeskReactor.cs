@@ -7,7 +7,7 @@ using System.Net;
 namespace Seq.App.Freshdesk
 {
     [SeqApp("Freshdesk", Description = "Creates tickets in freshdesk for events.")]
-    public class FreshdeskReactor : Reactor, ISubscribeTo<LogEventData>
+    public class FreshdeskReactor : SeqApp, ISubscribeTo<LogEventData>
     {
         private FreshdeskClient _client;
 

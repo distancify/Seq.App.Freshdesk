@@ -8,16 +8,16 @@ namespace Seq.App.Freshdesk.Debugger
     {
         static void Main(string[] args)
         {
-            var reacator = new FreshdeskReactor();
-            reacator.Identifier = "##APIKEY##";
-            reacator.Subdomain = "##SUBDOMAIN##";
-            reacator.RequesterEmail = "##REQUESTER_EMAIL##";
-            reacator.RequesterName = "##REQUESTER_NAME##";
-            reacator.TicketType = "##VALID_TICKET_TYPE##";
+            var reactor = new FreshdeskReactor();
+            reactor.Identifier = "##APIKEY##";
+            reactor.Subdomain = "##SUBDOMAIN##";
+            reactor.RequesterEmail = "##REQUESTER_EMAIL##";
+            reactor.RequesterName = "##REQUESTER_NAME##";
+            reactor.TicketType = "##VALID_TICKET_TYPE##";
 
-            reacator.Attach();
+            reactor.Attach();
 
-            reacator.On(new Apps.Event<Apps.LogEvents.LogEventData>("test", 1, DateTime.UtcNow, new Apps.LogEvents.LogEventData
+            reactor.On(new Apps.Event<Apps.LogEvents.LogEventData>("test", 1, DateTime.UtcNow, new Apps.LogEvents.LogEventData
             {
                 Exception = null,
                 Level = Apps.LogEvents.LogEventLevel.Fatal,
