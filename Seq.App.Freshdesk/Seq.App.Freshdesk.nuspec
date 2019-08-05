@@ -13,6 +13,6 @@
     <licenseUrl>https://opensource.org/licenses/MS-PL</licenseUrl>
   </metadata>
   <files>
-    <file src="bin\$configuration$\RestSharp.dll" target="lib\net45" />
+    <file src="bin\$configuration$\RestSharp.dll" target="lib\net452" />
   </files>
 </package>
