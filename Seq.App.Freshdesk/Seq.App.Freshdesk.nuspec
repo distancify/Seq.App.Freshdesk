@@ -10,7 +10,7 @@
     <copyright>Copyright 2017</copyright>
     <tags>seq-app Seq Freshdesk</tags>
     <projectUrl>https://github.com/distancify/Seq.App.Freshdesk</projectUrl>
-    <licenseUrl>https://opensource.org/licenses/MS-PL</licenseUrl>
+    <license type="expression">MS-PL</license>
   </metadata>
   <files>
     <file src="bin\$configuration$\RestSharp.dll" target="lib\net452" />

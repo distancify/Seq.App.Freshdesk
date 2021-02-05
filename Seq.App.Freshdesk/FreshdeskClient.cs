@@ -18,11 +18,12 @@ namespace Seq.App.Freshdesk
             _client.Authenticator = new HttpBasicAuthenticator(identifier, string.IsNullOrWhiteSpace(password) ? "X" : password);
         }
 
-        public IRestResponse PostTicket(Ticket ticket)
+        public IRestResponse<TicketResponse> PostTicket(Ticket ticket)
         {
             var req = new RestRequest("api/v2/tickets", Method.POST);
 
-            var body = new {
+            var body = new
+            {
                 name = ticket.Name,
                 email = ticket.Email,
                 priority = ticket.Priority,
@@ -35,8 +36,27 @@ namespace Seq.App.Freshdesk
 
             req.AddJsonBody(body);
 
-            return _client.Execute(req);
+            return _client.Execute<TicketResponse>(req);
         }
+
+        public IRestResponse PostReply(long ticketId, Reply reply)
+        {
+            var req = new RestRequest($"api/v2/tickets/{ticketId}/reply", Method.POST);
+
+            var body = new
+            {
+                body = reply.Body,
+            };
+
+            req.AddJsonBody(body);
+
+            return _client.Execute<TicketResponse>(req);
+        }
+    }
+
+    public class TicketResponse
+    {
+        public long Id { get; set; }
     }
 
     public class Ticket
@@ -48,7 +68,12 @@ namespace Seq.App.Freshdesk
         public TicketPriority Priority { get; set; }
         public string Type { get; set; }
     }
-    
+
+    public class Reply
+    {
+        public string Body { get; set; }
+    }
+
     public enum TicketSource
     {
         Email = 1
@@ -66,5 +91,5 @@ namespace Seq.App.Freshdesk
         High = 3,
         Urgent = 4
     }
-    
+
 }

@@ -1,8 +1,11 @@
 ﻿using Seq.Apps;
 using Seq.Apps.LogEvents;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 
 namespace Seq.App.Freshdesk
 {
@@ -10,6 +13,7 @@ namespace Seq.App.Freshdesk
     public class FreshdeskReactor : SeqApp, ISubscribeTo<LogEventData>
     {
         private FreshdeskClient _client;
+        private ConcurrentDictionary<string, long> _ticketGroupIds = new ConcurrentDictionary<string, long>();
 
         [SeqAppSetting(DisplayName = "Freskdesk subdomain", HelpText = "Your freshdesk subdomain {subdomain}.freshdesk.com", IsOptional = false)]
         public string Subdomain { get; set; }
@@ -32,15 +36,39 @@ namespace Seq.App.Freshdesk
         [SeqAppSetting(DisplayName = "Ticket subject prefix", HelpText = "Add a prefix to your ticket subject", IsOptional = true)]
         public string TicketSubjectPrefix { get; set; } = "";
 
+        [SeqAppSetting(DisplayName = "Group By Property", HelpText = "If this property is set on an event, new events will be posted as replies to previously created ticket with same value", IsOptional = true)]
+        public string GroupByProperty { get; set; } = "";
+
         public void On(Event<LogEventData> evt)
         {
-            var ticket = new Ticket();
-            ticket.Email = RequesterEmail;
-            ticket.Name = RequesterName;
-            ticket.Subject = TicketSubjectPrefix + evt.Data.RenderedMessage;
-            ticket.Description = evt.Data.RenderedMessage + "<br><br>" + string.Join("<br>", evt.Data.Properties.Select(p => $"{p.Key}: {p.Value}")) + "<br><br>" + evt.Data.Exception;
+            bool isGrouped = !string.IsNullOrWhiteSpace(this.GroupByProperty) &&
+                evt.Data.Properties.ContainsKey(this.GroupByProperty);
+            string groupKey = isGrouped ? evt.Data.Properties[this.GroupByProperty].ToString() : null;
+            if (string.IsNullOrWhiteSpace(groupKey))
+            {
+                groupKey = null;
+                isGrouped = false;
+            }
 
-            switch(evt.Data.Level)
+            if (isGrouped && _ticketGroupIds.ContainsKey(groupKey))
+            {
+                this.CreateReply(evt, groupKey);
+            }
+            else
+            {
+                this.CreateTicket(evt, isGrouped, groupKey);
+            }
+        }
+
+        private void CreateTicket(Event<LogEventData> evt, bool isGrouped, string groupKey)
+        {
+            var ticket = new Ticket();
+            ticket.Email = this.RequesterEmail;
+            ticket.Name = this.RequesterName;
+            ticket.Subject = this.TicketSubjectPrefix + evt.Data.RenderedMessage;
+            ticket.Description = this.ToBody(evt);
+
+            switch (evt.Data.Level)
             {
                 case LogEventLevel.Debug:
                 case LogEventLevel.Verbose:
@@ -61,9 +89,9 @@ namespace Seq.App.Freshdesk
                     break;
             }
 
-            if (!string.IsNullOrWhiteSpace(TicketType))
+            if (!string.IsNullOrWhiteSpace(this.TicketType))
             {
-                ticket.Type = TicketType;
+                ticket.Type = this.TicketType;
             }
 
             try
@@ -76,27 +104,62 @@ namespace Seq.App.Freshdesk
                         throw response.ErrorException;
                     }
 
-                    Log.ForContext("Content", response.Content).ForContext("Ticket", ticket, true).Warning("Freshdesk did not respond with the expected status {ExpectedStatus} but instead responded with {ActualStatus}", HttpStatusCode.Created, response.StatusCode);
+                    this.Log.ForContext("Content", response.Content).ForContext("Ticket", ticket, true).Warning("Freshdesk did not respond with the expected status {ExpectedStatus} but instead responded with {ActualStatus}", HttpStatusCode.Created, response.StatusCode);
                 }
-            } catch (Exception e)
-            {
-                Log.Error(e, "Failed to create ticket with freshdesk");
+                else if (isGrouped)
+                {
+                    _ticketGroupIds.TryAdd(groupKey, response.Data.Id);
+                }
             }
+            catch (Exception e)
+            {
+                this.Log.Error(e, "Failed to create ticket in Freshdesk");
+            }
+        }
+
+        private void CreateReply(Event<LogEventData> evt, string groupKey)
+        {
+            var reply = new Reply
+            {
+                Body = this.ToBody(evt)
+            };
+            try
+            {
+                var response = _client.PostReply(_ticketGroupIds[groupKey], reply);
+                if (response.StatusCode != HttpStatusCode.Created)
+                {
+                    if (response.ErrorException != null)
+                    {
+                        throw response.ErrorException;
+                    }
+
+                    this.Log.ForContext("Content", response.Content).ForContext("Reply", reply, true).Warning("Freshdesk did not respond with the expected status {ExpectedStatus} but instead responded with {ActualStatus}", HttpStatusCode.Created, response.StatusCode);
+                }
+            }
+            catch (Exception e)
+            {
+                this.Log.Error(e, "Failed to create reply in Freshdesk");
+            }
+        }
+
+        private string ToBody(Event<LogEventData> evt)
+        {
+            return evt.Data.RenderedMessage + "<br><br>" + string.Join("<br>", evt.Data.Properties.Select(p => $"{p.Key}: {p.Value}")) + "<br><br>" + evt.Data.Exception;
         }
 
         protected override void OnAttached()
         {
-            _client = new FreshdeskClient(Subdomain, Identifier, Password);
+            _client = new FreshdeskClient(this.Subdomain, this.Identifier, this.Password);
 
             base.OnAttached();
         }
-        
+
         /// <summary>
         /// Used for running the reactor manually.
         /// </summary>
         public void Attach()
         {
-            OnAttached();
+            this.OnAttached();
         }
     }
 }
